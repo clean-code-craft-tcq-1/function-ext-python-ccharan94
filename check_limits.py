@@ -9,10 +9,15 @@ CURRENT_BATTERYPACK   =   'Lithium'
 LANGUAGE              =   'EN'
 ALERTS                =    []
 
-lower_breach   = { 'DE' : 'Untergrenze überschritten für '   , 'EN' : 'Lower Limit Breached for '             }
-lower_warning  = { 'DE' : 'Warnung vor Untergrenze für '     , 'EN' : 'Warning: Lower Limit approaching for ' }
-higher_breach  = { 'DE' : 'Obergrenze überschritten für '    , 'EN' :'Higher Limit Breached for '             }
-higher_warning = { 'DE' : 'Warnung vor höherer Grenze für '  , 'EN' :'Warning: Higher Limit approaching for ' }
+#Define multi language error messages
+error_messages               = {'low_breach'  : { 'DE' : 'Untergrenze überschritten für ', 
+                                                  'EN' : 'Lower Limit Breached for ' }   ,
+                                'low_warning' : { 'DE' : 'Warnung vor Untergrenze für '  ,   
+                                                  'EN' : 'Warning: Lower Limit approaching for '},
+                                'high_breach' : { 'DE' : 'Obergrenze überschritten für '  , 
+                                                  'EN' : 'Higher Limit Breached for ' }   ,
+                                'high_warning': { 'DE' : 'Warnung vor höherer Grenze für ', 
+                                                  'EN' : 'Warning: Higher Limit approaching for ' } }
 
 
 #Declare operating threshold params for different battery packs
@@ -46,8 +51,9 @@ def battery_is_ok(**kwargs):
       lower,upper    = getBoundaryConditions(batteryLimits,criteria, criteriavalue)
       lower_status   = checkLowerLimitBreach(criteriavalue,lower,upper) 
       upper_status   = checkUpperLimitBreach(criteriavalue,upper)
+      hasBreached    = checkBreaches(lower_status, upper_status)
 
-      if not ( upper_status == 'normal' and lower_status == 'normal'):
+      if hasBreached:
           BATTERY_CONDITION_ALL_OK = False
           global ALERTS
           ALERTS = setErrorMessages(upper_status, lower_status, criteria, criteriavalue)       
@@ -55,6 +61,13 @@ def battery_is_ok(**kwargs):
       printErrorMessages(ALERTS)
           
   return BATTERY_CONDITION_ALL_OK
+
+def checkBreaches(lower_status, upper_status):
+    if not ( upper_status == 'normal' and lower_status == 'normal'):
+        return True
+    else:
+        return False
+    
 
 def setErrorMessages(upper_status, lower_status, criteria, criteriavalue):
      if upper_status != 'normal':
@@ -69,16 +82,9 @@ def setErrorMessages(upper_status, lower_status, criteria, criteriavalue):
     
 
 def printErrorMessages(ALERTS):
-     
     for error in ALERTS:
-        if error['status'] == 'low_breach':
-            print ( lower_breach[LANGUAGE] + error['criteria'] )
-        elif error['status'] == 'high_breach':
-            print ( higher_breach[LANGUAGE] + error['criteria'] )
-        elif error['status'] == 'low_warning':
-            print ( lower_warning[LANGUAGE] + error['criteria'] )
-        elif error['status'] == 'high_warning':
-            print ( higher_warning[LANGUAGE] + error['criteria'] )
+        error_type = error['status']
+        print ( error_messages[error_type][LANGUAGE] + error['criteria'] )
             
     if ALERTS.__len__ != 0:
         ALERTS.clear()
