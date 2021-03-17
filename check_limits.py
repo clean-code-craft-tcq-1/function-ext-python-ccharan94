@@ -3,6 +3,7 @@
 # Battery Monitoring System:
 # ---------------------------------------------    
 # =============================================================================
+import random
 
 #Declare global variables
 CURRENT_BATTERYPACK   =   'Lithium'
@@ -19,7 +20,7 @@ error_messages               = {'low_breach'  : { 'DE' : 'Untergrenze überschri
                                 'high_warning': { 'DE' : 'Warnung vor höherer Grenze für ', 
                                                   'EN' : 'Warning: Higher Limit approaching for ' } }
 
-
+#MVC Model
 #Declare operating threshold params for different battery packs
 batteryThresholdParams = { 'Lithium' : 
                             {
@@ -68,7 +69,7 @@ def checkBreaches(lower_status, upper_status):
     else:
         return False
     
-
+#Consolidate Error messages - MVC Controller
 def setErrorMessages(upper_status, lower_status, criteria, criteriavalue):
      if upper_status != 'normal':
          status = upper_status
@@ -80,7 +81,7 @@ def setErrorMessages(upper_status, lower_status, criteria, criteriavalue):
          ALERTS.append(error)
      return ALERTS
     
-
+#Error Reporting - MVC View
 def printErrorMessages(ALERTS):
     for error in ALERTS:
         error_type = error['status']
@@ -128,14 +129,16 @@ if __name__ == '__main__':
   #------------------------------------------------------
   #Generate dynamic testcases independent of battery type
   #------------------------------------------------------
+  delta_breach_temperature = random.randint(1,20)
+  delta_breach_soc         = random.randint(1,20)
   
   """Temperature Tests"""
   #Testcase for normal temperature working range 
   assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is True), 'Temperature Normal Range Test'
   #Testcase to check Upper limit breach for temperature
-  assert(battery_is_ok(Temperature = temperature_limits['upper']+1, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is False), 'Temperature Upper Limit Breach'
+  assert(battery_is_ok(Temperature = temperature_limits['upper']+delta_breach_temperature, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is False), 'Temperature Upper Limit Breach'
   #Testcase to check Lower limit breach for temperature 
-  assert(battery_is_ok(Temperature = temperature_limits['lower']-1, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is False), 'Temperature Lower Limit Breach'
+  assert(battery_is_ok(Temperature = temperature_limits['lower']-delta_breach_temperature, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is False), 'Temperature Lower Limit Breach'
   #Lower limit edge testcase for temperature
   assert(battery_is_ok(Temperature = temperature_limits['lower']+2, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is False), 'Temperature Lower Limit Warning'
   #Upper limit edge testcase for temperature
@@ -145,9 +148,9 @@ if __name__ == '__main__':
   #Testcase for normal State of charge working range 
   assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_middle_range, ChargeRate = chargerate_middle_range) is True), 'SOC Normal Range Test'
   #Testcase to check Upper limit breach for State of charge
-  assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_limits['upper']+1, ChargeRate = chargerate_middle_range) is False), 'SOC Upper Limit Breach'
+  assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_limits['upper']+delta_breach_soc, ChargeRate = chargerate_middle_range) is False), 'SOC Upper Limit Breach'
   #Testcase to check Lower limit breach for State of charge 
-  assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_limits['lower']-1, ChargeRate = chargerate_middle_range) is False), 'SOC Lower Limit Breach'
+  assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_limits['lower']-delta_breach_soc, ChargeRate = chargerate_middle_range) is False), 'SOC Lower Limit Breach'
   #Upper limit edge testcase for State of charge 
   assert(battery_is_ok(Temperature = temp_middle_range, StateOfCharge = soc_limits['upper']-2, ChargeRate = chargerate_middle_range) is False), 'SOC Upper Limit Edge Warning'
   #Lower limit edge testcase for State of charge
